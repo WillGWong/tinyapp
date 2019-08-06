@@ -57,6 +57,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
  res.redirect("/urls")
 })
 
+app.post("/urls/:shortURL/update", (req, res) => {
+  res.redirect(`/urls/${req.params.shortURL}`)
+})
+
 
 function generateRandomString() {
   var result           = '';
