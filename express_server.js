@@ -42,9 +42,9 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  let tinyURL = generateRandomString()
-  urlDatabase[tinyURL] = req.body['longURL']
-  res.redirect(`/urls/${tinyURL}`);
+  let shortURL = generateRandomString()
+  urlDatabase[shortURL] = req.body['longURL']
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/u/:shortURL", (req, res) => {
