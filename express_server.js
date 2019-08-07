@@ -47,12 +47,16 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  if (req.cookies["userID"]) {
   let templateVars = {  username: getEmailbyID(req.cookies["userID"]) }
   res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login")
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { username: getEmailbyID(req.cookies["userID"]), shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  let templateVars = { username: getEmailbyID(req.cookies["userID"]), shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]["longURL"]};
   res.render("urls_show", templateVars);
 });
 
@@ -64,7 +68,8 @@ app.post("/urls", (req, res) => {
       return
     }
   }
-  urlDatabase[shortURL] = req.body['longURL']
+  urlDatabase[shortURL] = { longURL: req.body['longURL'], userID: req.cookies["userID"] }
+  console.log(urlDatabase)
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -117,7 +122,8 @@ app.post("/register", (req, res) => {
 
 app.post("/login", (req, res) => {
  if (!emailChecker(req.body.email) && passwordChecker(req.body.password)) {
-   res.cookie("username", req.body.email)
+   let userID = getIDbyEmail(req.body.email)
+  res.cookie("userID", userID)
    return res.redirect("/urls")
  }
  res.status(403)
@@ -161,8 +167,8 @@ function getEmailbyID (userID) {
 
 function getIDbyEmail (userEmail) {
   for (let key in users) {
-    if (user[key]["email"] === userEmail) {
-      return user[key]["id"]
+    if (users[key]["email"] === userEmail) {
+      return users[key]["id"]
     }
   }
 }
