@@ -102,7 +102,7 @@ app.get("/urls/:shortURL", (req, res) => {
   if (urlChecker(req.params.shortURL, urlDatabase) === false) {
     return res.send("Could not find URL");
   }
-  if (req.session.user_id !== urlDatabase[req.params.shortURL]["userID"] && urlDatabase[req.params.shortURL]["userID"]!== "aJ48lW") {
+  if (req.session.user_id !== urlDatabase[req.params.shortURL]["userID"] && urlDatabase[req.params.shortURL]["userID"] !== "aJ48lW") {
     return res.send("You do not have permission to view this");
   }
   let numVisitors = numberOfVisitors(req.params.shortURL, visits);
@@ -130,7 +130,7 @@ app.delete("/urls/:shortURL", (req, res) => {
   if (req.session.user_id === undefined) {
     res.send("Please go back and Login or Register");
   }
-  if (req.session.user_id !== urlDatabase[req.params.shortURL]["userID"] && urlDatabase[req.params.shortURL]["userID"]!== "aJ48lW") {
+  if (req.session.user_id !== urlDatabase[req.params.shortURL]["userID"] && urlDatabase[req.params.shortURL]["userID"] !== "aJ48lW") {
     res.send("You do not have permission to view this");
   }
   if (req.session.user_id === urlDatabase[req.params.shortURL]["userID"]) {
@@ -147,7 +147,7 @@ app.put("/urls/:shortURL", (req, res) => {
   if (req.session.user_id === undefined) {
     res.send("Please go back and Login or Register");
   }
-  if (req.session.user_id !== urlDatabase[req.params.shortURL]["userID"] && urlDatabase[req.params.shortURL]["userID"]!== "aJ48lW") {
+  if (req.session.user_id !== urlDatabase[req.params.shortURL]["userID"] && urlDatabase[req.params.shortURL]["userID"] !== "aJ48lW") {
     res.send("You do not have permission to view this");
   }
   if (req.session.user_id === urlDatabase[req.params.shortURL]["userID"]) {
