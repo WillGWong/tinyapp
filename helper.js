@@ -66,4 +66,11 @@ function generateRandomString() {
   return result;
 }
 
-module.exports = { getEmailbyID, getIDbyEmail, urlsForUser, emailChecker, numberOfVisitors, getTimeAndIDbyURL, generateRandomString };
+function urlChecker(shortURL, database) {
+  if (!Object.keys(database).includes(shortURL)) {
+    return false
+  }
+  return true
+}
+
+module.exports = { getEmailbyID, getIDbyEmail, urlsForUser, emailChecker, numberOfVisitors, getTimeAndIDbyURL, generateRandomString, urlChecker };

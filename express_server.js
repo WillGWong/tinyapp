@@ -4,7 +4,8 @@ const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-const { getEmailbyID, getIDbyEmail, urlsForUser, emailChecker, numberOfVisitors, getTimeAndIDbyURL, generateRandomString } = require("./helper");
+const methodOverride = require('method-override');
+const { getEmailbyID, getIDbyEmail, urlsForUser, emailChecker, numberOfVisitors, getTimeAndIDbyURL, generateRandomString, urlChecker } = require("./helper");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
@@ -12,6 +13,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000
 }));
 app.set("view engine", "ejs");
+app.use(methodOverride('_method'));
 
 
 const urlDatabase = {
@@ -41,7 +43,11 @@ const visits = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.listen(PORT, () => {
@@ -75,6 +81,9 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  if (urlChecker(req.params.shortURL, urlDatabase) === false) {
+    return res.send("Could not find URL");
+  }
   let longURL = urlDatabase[req.params.shortURL]["longURL"];
   let currentTime = Date().toLocaleString();
   visits[currentTime] = {
@@ -90,6 +99,12 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  if (urlChecker(req.params.shortURL, urlDatabase) === false) {
+    return res.send("Could not find URL");
+  }
+  if (req.session.user_id !== urlDatabase[req.params.shortURL]["userID"] && urlDatabase[req.params.shortURL]["userID"]!== "aJ48lW") {
+    return res.send("You do not have permission to view this");
+  }
   let numVisitors = numberOfVisitors(req.params.shortURL, visits);
   let timeIdObj = getTimeAndIDbyURL(req.params.shortURL, visits);
   let templateVars = { username: getEmailbyID(req.session.user_id, users), shortURL: req.params.shortURL,
@@ -111,7 +126,13 @@ app.post("/urls", (req, res) => {
 });
 
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
+  if (req.session.user_id === undefined) {
+    res.send("Please go back and Login or Register");
+  }
+  if (req.session.user_id !== urlDatabase[req.params.shortURL]["userID"] && urlDatabase[req.params.shortURL]["userID"]!== "aJ48lW") {
+    res.send("You do not have permission to view this");
+  }
   if (req.session.user_id === urlDatabase[req.params.shortURL]["userID"]) {
     delete urlDatabase[req.params.shortURL];
   }
@@ -122,7 +143,13 @@ app.post("/urls/:shortURL/redir", (req, res) => {
   res.redirect(`/urls/${req.params.shortURL}`);
 });
 
-app.post("/urls/:shortURL/update", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
+  if (req.session.user_id === undefined) {
+    res.send("Please go back and Login or Register");
+  }
+  if (req.session.user_id !== urlDatabase[req.params.shortURL]["userID"] && urlDatabase[req.params.shortURL]["userID"]!== "aJ48lW") {
+    res.send("You do not have permission to view this");
+  }
   if (req.session.user_id === urlDatabase[req.params.shortURL]["userID"]) {
     urlDatabase[req.params.shortURL].longURL = req.body['longURL'];
   }
@@ -130,6 +157,9 @@ app.post("/urls/:shortURL/update", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  if (req.session.user_id !== undefined) {
+    res.redirect("/urls");
+  }
   let templateVars = {  username: getEmailbyID(req.session.user_id, users) };
   res.render('urls_login', templateVars);
 });
@@ -140,6 +170,9 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  if (req.session.user_id !== undefined) {
+    res.redirect("/urls");
+  }
   let templateVars = {  username: getEmailbyID(req.session.user_id, users) };
   res.render('urls_register', templateVars);
 });
